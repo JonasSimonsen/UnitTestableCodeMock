@@ -1,0 +1,41 @@
+When implementing the interface. there was a problem with the getFormattedDate()
+method, because it was static.
+It gives an issue where all other methods that used it need to be static.
+
+isStringValid
+When there is not written public/private/protected before a method name
+it will be package protected and can not be seen in the test classes.
+making it 
+
+coverage
+We get little coverage on our different joketypes.
+The reason for the is that we mock them, so we dont actually use them.
+
+JUnit
+JUnit is a unit framework to unit test in Java.
+
+Mockito
+Mockito is a mocking framework, which makes it very easy to mock away dependencies
+
+Hamcrest
+Hamcrest is a different matcher tool used in tests.
+making the tests more "readable", in that way the test can be more like "normal" english.
+
+Jacoco
+Jacoco gives an overview over the lines of code that are executed during
+tests. 
+And as an added bonus highlight them so you easily can see it.
+As a general note you should strive for 80% coverage.
+I only hit ~50% so i am a bit behind..
+
+Most of these tools and tools like them will have a maven plugin / dependency
+making it extremely easy to setup across multiple pc'es, using Maven.
+
+can be done by doing something like this:
+<dependency>
+   <groupId>junit</groupId>
+   <artifactId>junit</artifactId>
+   <version>4.12</version>
+   <scope>test</scope>
+</dependency>
+

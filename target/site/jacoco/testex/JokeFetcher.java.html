@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="da"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JokeFetcher.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jokeFetcher</a> &gt; <a href="index.source.html" class="el_package">testex</a> &gt; <span class="el_source">JokeFetcher.java</span></div><h1>JokeFetcher.java</h1><pre class="source lang-java linenums">
+package testex;
+import static com.jayway.restassured.RestAssured.given;
+import com.jayway.restassured.response.ExtractableResponse;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import testex.jokefetching.FetcherFactory;
+import testex.jokefetching.IFetcherFactory;
+import testex.jokefetching.IJokeFetcher;
+
+/**
+ * Class used to fetch jokes from a number of external joke API's
+ */
+public class JokeFetcher {
+  
+    
+    private IDateFormatter iDateFormatter;
+    private IFetcherFactory iFetcherFactory;
+
+<span class="fc" id="L21">    public JokeFetcher(IDateFormatter iDateFormatter, IFetcherFactory iFetcherFactory) {</span>
+<span class="fc" id="L22">        this.iDateFormatter = iDateFormatter;</span>
+<span class="fc" id="L23">        this.iFetcherFactory = iFetcherFactory;</span>
+<span class="fc" id="L24">    }</span>
+    
+    
+    
+  /**
+   * These are the valid types that can be used to indicate required jokes
+   * eduprog: Contains joke related to programming and education. API only returns a new value each hour
+   * chucknorris: Fetch a chucknorris joke. Not always political correct ;-)
+   * moma: Fetch a &quot;MOMA&quot; joke. Defenitely never political correct ;-)
+   * tambal: Just random jokes
+   */
+<span class="fc" id="L35">  private final List&lt;String&gt; availableTypes = Arrays.asList(&quot;eduprog&quot;,&quot;chucknorris&quot;,&quot;moma&quot;,&quot;tambal&quot;);</span>
+  
+ 
+  /**
+   * The valid string values to use in a call to getJokes(..)
+   * @return All the valid strings that can be used
+   */
+  public List&lt;String&gt; getAvailableTypes(){
+<span class="fc" id="L43">    return availableTypes;</span>
+  }
+  
+  /**
+   * Verifies whether a provided value is a valid string (contained in availableTypes)
+   * @param jokeTokens. Example (with valid values only): &quot;eduprog,chucknorris,chucknorris,moma,tambal&quot;
+   * @return true if the param was a valid value, otherwise false
+   */
+  public boolean isStringValid(String jokeTokens){
+<span class="fc" id="L52">    String[] tokens = jokeTokens.split(&quot;,&quot;);</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">      for(String token: tokens){</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">      if(!availableTypes.contains(token)){</span>
+<span class="fc" id="L55">        return false;</span>
+      }
+    }
+<span class="fc" id="L58">    return true;</span>
+  }
+  
+  /**
+   * Fetch jokes from external API's as given in the input string - jokesToFetch
+   * @param jokesToFetch A comma separated string with values (contained in availableTypes) indicating the jokes
+   * to fetch. Example: &quot;eduprog,chucknorris,chucknorris,moma,tambal&quot; will return five jokes (two chucknorris)
+   * @param timeZone. Must be a valid timeZone string as returned by: TimeZone.getAvailableIDs()  
+   * @return A Jokes instance with the requested jokes + time zone adjusted string representing fetch time
+   * (the jokes list can contain null values, if a server did not respond correctly)
+   * @throws JokeException. Thrown if either of the two input arguments contains illegal values
+   */
+  
+    public Jokes getJokes(String jokesToFetch, String timeZone) throws JokeException {
+<span class="fc" id="L72">        isStringValid(jokesToFetch);</span>
+<span class="fc" id="L73">        Jokes jokes = new Jokes();</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">        for (IJokeFetcher fetcher : iFetcherFactory.getJokeFetchers(jokesToFetch)) {</span>
+<span class="nc" id="L75">            jokes.addJoke(fetcher.getJoke());</span>
+<span class="nc" id="L76">        }</span>
+<span class="fc" id="L77">        String tzString = iDateFormatter.getFormattedDate(new Date(), timeZone);</span>
+<span class="fc" id="L78">        jokes.setTimeZoneString(tzString);</span>
+<span class="fc" id="L79">        return jokes;</span>
+    }
+  
+  
+  /**
+   * DO NOT TEST this function. It's included only to get a quick way of executing the code
+   * @param args 
+   */
+  public static void main(String[] args) throws JokeException {
+<span class="nc" id="L88">    JokeFetcher jf = new JokeFetcher(new DateFormatter(), new FetcherFactory());</span>
+<span class="nc" id="L89">    Jokes jokes = jf.getJokes(&quot;eduprog,eduprog,moma,tambal,chucknorris,chucknorris,moma,tambal&quot;,&quot;Europe/Copenhagen&quot;);</span>
+<span class="nc" id="L90">    jokes.getJokes().forEach((joke) -&gt; {</span>
+<span class="nc" id="L91">      System.out.println(joke);</span>
+<span class="nc" id="L92">    });</span>
+<span class="nc" id="L93">    System.out.println(&quot;Is String Valid: &quot;+jf.isStringValid(&quot;edu_prog,xxx&quot;));</span>
+<span class="nc" id="L94">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>
